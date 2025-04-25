@@ -94,15 +94,15 @@ function interpret(prog) {
     exprs,
   };
 }
-function opPrecedence(op) {
-  if (op === "+" || op === "-") return 1;
-  if (op === "*" || op === "/") return 2;
+function opPower(op) {
+  if (op === "+" || op === "-") return [1, 2];
+  if (op === "*" || op === "/") return [3, 4];
   throw new Error("Unknown operator precedence: " + op);
 }
-function precedence(tree) {
+function power(tree) {
   return tree.match({
     Num: () => Infinity,
-    Op: (op, a, b) => opPrecedence(op),
+    Op: (op, a, b) => opPower(op),
   });
 }
 function render(tree) {
@@ -113,9 +113,9 @@ function render(tree) {
       const bEls = render(b);
       if (op === "/") return [frac(row(aEls), row(bEls))];
       const opChar = op === "*" ? "×" : op;
-      const opPre = opPrecedence(op);
-      const aPre = precedence(a) < opPre ? [bracketed("(", ")", aEls)] : aEls;
-      const bPre = precedence(b) < opPre ? [bracketed("(", ")", bEls)] : bEls;
+      const opPre = opPower(op);
+      const aPre = power(a)[1] < opPre[0] ? [bracketed("(", ")", aEls)] : aEls;
+      const bPre = power(b)[0] < opPre[1] ? [bracketed("(", ")", bEls)] : bEls;
       return [...aPre, mo(opChar), ...bPre];
     },
   });
@@ -130,8 +130,11 @@ function $(selector) {
   };
   return obj;
 }
-function rerender(text) {
-  const prog = lex(text);
+function toURI(code) {
+  return code.trim().replace(/\s+/g, "_").trim();
+}
+function rerender(code) {
+  const prog = lex(code);
   const result = interpret(prog);
   $("#exprs").el.innerHTML = "";
   $("#errors").el.innerHTML = "";
@@ -150,10 +153,23 @@ function resize(el) {
   el.style.height = "0px";
   el.style.height = el.scrollHeight + 2 + "px";
 }
-$("#code").on("input", (e) => {
-  rerender(e.target.value);
-  resize(e.target);
+
+const defaultCode = "1 2 3 * 4 / - 5 +";
+function valueFromURI() {
+  if (window.location.hash === "") return defaultCode;
+  const hash = window.location.hash.slice(1);
+  if (hash === "") return defaultCode;
+  return decodeURIComponent(hash).replaceAll("_", " ");
+}
+window.addEventListener('load', () => {
+  $("#code").el.value = valueFromURI();
+  view();
 });
-$("#code").el.value = "1 2 3 * 4 / + 5 -";
-rerender($("#code").el.value);
-resize($("#code").el);
+function view() {
+  rerender($("#code").el.value);
+  resize($("#code").el);
+  window.location.hash = encodeURIComponent(toURI($("#code").el.value));
+}
+$("#code").on("input", (e) => view());
+$("#code").el.value = valueFromURI();
+view();
