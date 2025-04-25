@@ -11,22 +11,26 @@
     />
     <script defer src="main.js"></script>
     <style>
+      main {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+      }
       #code {
         position: fixed;
         bottom: 0;
         left: 0;
         right: 0;
-        overflow-wrap: break-word;
-        overflow-y: auto;
         resize: none;
       }
     </style>
   </head>
-  <body>
-    <main class="f2 pv3 ph3 overflow-y-scroll">
+  <body class="overflow-hidden">
+    <main class="f2 pv3 ph3 overflow-y-auto">
       <div id="exprs" class="flex flex-column items-start"></div>
       <div id="errors" class="code red"></div>
     </main>
-    <textarea id="code" class="f3 code"></textarea>
+    <textarea id="code" class="f3 code overflow-y-auto"></textarea>
   </body>
 </html>
