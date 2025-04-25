@@ -139,7 +139,6 @@ function rerender(code) {
   $("#exprs").el.innerHTML = "";
   $("#errors").el.innerHTML = "";
   if (!result.isOk) {
-    console.error(result.error);
     $("#errors").el.textContent = result.error;
   }
   for (let i = 0; i < result.exprs.length; i++) {
@@ -149,9 +148,12 @@ function rerender(code) {
     $("#exprs").el.appendChild(el);
   }
 }
-function resize(el) {
-  el.style.height = "0px";
-  el.style.height = el.scrollHeight + 2 + "px";
+function resize() {
+  $("#code").el.style.height = "0px";
+  const codeHeight = Math.min($("#code").el.scrollHeight + 2, window.innerHeight * 0.5);
+  const otherHeight = window.innerHeight - codeHeight;
+  $("#code").el.style.height = codeHeight + "px";
+  $("main").el.style.height = otherHeight + "px";
 }
 
 const defaultCode = "1 2 3 * 4 / - 5 +";
@@ -163,13 +165,23 @@ function valueFromURI() {
 }
 window.addEventListener('load', () => {
   $("#code").el.value = valueFromURI();
-  view();
+  setURL();
 });
+window.addEventListener('resize', resize);
+
 function view() {
-  rerender($("#code").el.value);
-  resize($("#code").el);
+  rerender($("#code").el.value.slice(0, $("#code").el.selectionEnd));
+}
+function setURL() {
   window.location.hash = encodeURIComponent(toURI($("#code").el.value));
 }
-$("#code").on("input", (e) => view());
+$("#code").on("keydown", view);
+$("#code").on("click", view);
+$("#code").on("touchstart", view);
+$("#code").on("input", setURL);
+$("#code").on("input", resize);
 $("#code").el.value = valueFromURI();
+
 view();
+setURL();
+resize();

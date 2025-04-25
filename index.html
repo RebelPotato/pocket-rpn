@@ -16,13 +16,14 @@
         bottom: 0;
         left: 0;
         right: 0;
-        overflow: hidden;
+        overflow-wrap: break-word;
+        overflow-y: auto;
         resize: none;
       }
     </style>
   </head>
   <body>
-    <main class="f2 mv3 mh3">
+    <main class="f2 pv3 ph3 overflow-y-scroll">
       <div id="exprs" class="flex flex-column items-start"></div>
       <div id="errors" class="code red"></div>
     </main>
